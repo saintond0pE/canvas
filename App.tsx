@@ -8,6 +8,13 @@ type Page = 'landing' | 'editor';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // The cursor trail is only suitable for devices with a fine pointer (like a mouse).
+    // This check disables it on most touch-based mobile devices.
+    setIsDesktop(window.matchMedia('(pointer: fine)').matches);
+  }, []);
 
   useEffect(() => {
     // Set body class based on the current page for background colors
@@ -33,7 +40,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen text-gray-800 font-sans">
-      <CursorTrail />
+      {isDesktop && <CursorTrail />}
       <Header onLogoClick={navigateToHome} />
       <main>
         {currentPage === 'landing' ? (
