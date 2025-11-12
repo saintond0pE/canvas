@@ -147,3 +147,53 @@ export const expandImage = (base64ImageData: string, mimeType: string) => {
     const prompt = `Expand the existing scene outward as if zooming out, revealing the environment beyond the current frame. This is also known as "outpainting". Maintain the original color palette and art style for a seamless and consistent result.`;
     return callGeminiImageAPI(base64ImageData, mimeType, prompt);
 };
+
+export const getPromptCoaching = async (userMessage: string): Promise<{ suggestion: string; tip: string }> => {
+  try {
+    if (!process.env.API_KEY) {
+      throw new Error("API_KEY environment variable not set");
+    }
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: userMessage,
+      config: {
+        systemInstruction: `You are a creative assistant named "Prompt Coach" for a visual design tool. Your job is to help users write more effective and descriptive text-to-image prompts based on their simple or vague ideas. You must respond with a JSON object containing two keys:
+1. "suggestion": A refined, expanded, and more creative version of their prompt.
+2. "tip": A short, friendly tip explaining why the new version is better. For example, mention adding atmosphere, lighting, or texture.
+Your tone should be friendly, inspiring, and creative.`,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            suggestion: {
+              type: Type.STRING,
+              description: 'The refined, creative prompt suggestion.',
+            },
+            tip: {
+              type: Type.STRING,
+              description: 'A short, friendly tip explaining the improvement.',
+            },
+          },
+          required: ['suggestion', 'tip'],
+        },
+      },
+    });
+
+    const jsonString = response.text.trim();
+    const coachingResponse = JSON.parse(jsonString);
+
+    if (coachingResponse.suggestion && coachingResponse.tip) {
+      return coachingResponse;
+    }
+
+    throw new Error("Invalid response format from Gemini API for prompt coaching.");
+  } catch (error) {
+    console.error("Error getting prompt coaching from Gemini:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to get coaching: ${error.message}`);
+    }
+    throw new Error("An unknown error occurred while getting coaching.");
+  }
+};
