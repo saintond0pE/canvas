@@ -1,22 +1,31 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { ImageFile } from '../types';
+import React, { useState, useCallback, useEffect } from 'react';
+import { ImageFile, Project } from '../types';
 import FileUpload from './FileUpload';
 import Button from './Button';
 import Spinner from './Spinner';
 import { DownloadIcon } from './icons/DownloadIcon';
-import { SparklesIcon } from './icons/SparklesIcon';
+import { SaveIcon } from './icons/SaveIcon';
 import { UndoIcon } from './icons/UndoIcon';
 import { RedoIcon } from './icons/RedoIcon';
 import { VibrantUploadScene } from './icons/VibrantUploadScene';
 import { editImageWithGemini, remixImage, interpretAndApplyEmotion, expandImage } from '../services/geminiService';
+import { getProject, saveProject } from '../services/projectService';
 import { EditorBackgroundShapes } from './icons/EditorBackgroundShapes';
 import { MagicWandIcon } from './icons/MagicWandIcon';
 import { RemixIcon } from './icons/RemixIcon';
 import { EmotionIcon } from './icons/EmotionIcon';
 import { ExpandIcon } from './icons/ExpandIcon';
 import PromptCoach from './PromptCoach';
+import { SparklesIcon } from './icons/SparklesIcon';
 
-const ThumbnailEditor: React.FC = () => {
+interface ThumbnailEditorProps {
+  projectId: string | null;
+  onNavigateBack: () => void;
+}
+
+const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigateBack }) => {
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [projectName, setProjectName] = useState<string>('');
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -26,19 +35,57 @@ const ThumbnailEditor: React.FC = () => {
   const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
   const [isExtensionMenuOpen, setIsExtensionMenuOpen] = useState(false);
   
+  useEffect(() => {
+    if (projectId) {
+      const loadedProject = getProject(projectId);
+      if (loadedProject) {
+        setCurrentProject(loadedProject);
+        setProjectName(loadedProject.name);
+        setOriginalImage(loadedProject.originalImage);
+        setHistory(loadedProject.history);
+        setHistoryIndex(loadedProject.history.length - 1);
+      }
+    } else {
+      // Reset for a new project
+      setCurrentProject(null);
+      setProjectName('');
+      setOriginalImage(null);
+      setHistory([]);
+      setHistoryIndex(-1);
+    }
+    setError(null);
+    setPrompt('');
+  }, [projectId]);
+
   const editedImage = history[historyIndex] || originalImage?.base64;
 
   const handleImageUpload = useCallback((file: ImageFile) => {
     setOriginalImage(file);
+    setProjectName(file.name.replace(/\.[^/.]+$/, "") || 'Untitled Project');
     setHistory([]);
     setHistoryIndex(-1);
     setError(null);
     setPrompt('');
   }, []);
   
-  const handleStartOver = useCallback(() => {
-    setOriginalImage(null);
-  }, []);
+  const handleBack = useCallback(() => {
+    onNavigateBack();
+  }, [onNavigateBack]);
+
+  const handleSave = useCallback(() => {
+    if (!originalImage) return;
+
+    const projectToSave: Project = {
+      id: currentProject?.id || Date.now().toString(),
+      name: projectName || 'Untitled Project',
+      originalImage,
+      history,
+      createdAt: currentProject?.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    };
+    saveProject(projectToSave);
+    onNavigateBack();
+  }, [originalImage, projectName, history, currentProject, onNavigateBack]);
 
   const handleAIAction = async (action: (base64: string, mimeType: string, prompt?: string) => Promise<string>) => {
     const imageToEdit = history[historyIndex] || originalImage?.base64;
@@ -80,8 +127,10 @@ const ThumbnailEditor: React.FC = () => {
   const handleExpand = () => handleAIAction(expandImage);
 
   const handleUndo = () => {
-    if (historyIndex > -1) {
+    if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
+    } else if (historyIndex === 0) {
+      setHistoryIndex(-1);
     }
   };
 
@@ -90,15 +139,14 @@ const ThumbnailEditor: React.FC = () => {
       setHistoryIndex(historyIndex + 1);
     }
   };
-
+  
   const handleDownload = (targetHeight: number) => {
-    const imageToDownload = history[historyIndex];
-    if (!imageToDownload) return;
+    if (!editedImage) return;
     
     const img = new Image();
     img.onload = () => {
         const aspectRatio = img.width / img.height;
-        const targetWidth = targetHeight * aspectRatio;
+        const targetWidth = Math.round(targetHeight * aspectRatio);
 
         const canvas = document.createElement('canvas');
         canvas.width = targetWidth;
@@ -110,12 +158,12 @@ const ThumbnailEditor: React.FC = () => {
         
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
-        link.download = `canvas_ai_${targetWidth}x${targetHeight}_${Date.now()}.png`;
+        link.download = `${projectName.replace(/\s+/g, '_')}_${targetWidth}x${targetHeight}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
-    img.src = imageToDownload;
+    img.src = editedImage;
     setIsDownloadMenuOpen(false);
   };
 
@@ -131,32 +179,42 @@ const ThumbnailEditor: React.FC = () => {
             <VibrantUploadScene className="absolute top-0 left-0 w-full h-full object-cover" />
             <div className="relative z-10 text-center flex flex-col items-center">
               <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800" style={{ textShadow: '2px 2px 8px rgba(255,255,255,0.3)' }}>
-                Start with a blank canvas
+                Create a new project
               </h1>
+               <p className="mt-4 text-lg text-gray-600 max-w-xl">Upload an image to start your next masterpiece.</p>
               <div className="mt-8 w-full max-w-2xl">
                 <FileUpload onFileUpload={handleImageUpload} />
               </div>
+              <button onClick={handleBack} className="mt-8 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                &larr; Back to Projects
+              </button>
             </div>
           </div>
         ) : (
           <div className="relative min-h-[calc(100vh-89px)] flex flex-col items-center justify-center p-4 md:p-8">
             <EditorBackgroundShapes />
             
-            <div className="relative w-full max-w-4xl aspect-video bg-white/20 rounded-2xl shadow-2xl overflow-hidden border-4 border-white/80 flex items-center justify-center">
+            <div className="relative w-full max-w-4xl aspect-video bg-white/20 rounded-3xl shadow-2xl overflow-hidden border-4 border-white/80 flex items-center justify-center">
                 {isLoading && (
-                  <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center rounded-lg z-30">
+                  <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center rounded-3xl z-30">
                     <Spinner size="lg" />
                     <p className="text-gray-600 mt-4">AI is creating magic...</p>
                   </div>
                 )}
-                {editedImage ? (
-                  <img src={editedImage} alt="Edited result" className="object-contain w-full h-full" />
-                ) : (
-                  <p>Upload an image to start</p>
-                )}
+                <img src={editedImage} alt="Edited result" className="object-cover w-full h-full" />
             </div>
             
-            <div className="relative mt-6 w-full max-w-4xl bg-white/50 backdrop-blur-2xl p-4 rounded-2xl shadow-lg border border-white/50">
+            <div className="relative mt-8 w-full max-w-4xl bg-white/50 backdrop-blur-2xl p-4 rounded-2xl shadow-lg border border-white/50">
+              <div className="w-full mb-4">
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  placeholder="Untitled Project"
+                  className="w-full text-xl font-bold bg-transparent border-0 border-b-2 border-gray-300/50 focus:ring-0 focus:border-pink-500 transition-colors p-2"
+                />
+              </div>
+
               <div className="flex flex-col md:flex-row items-center gap-4">
                 <div className="w-full">
                   <textarea
@@ -178,7 +236,7 @@ const ThumbnailEditor: React.FC = () => {
                   </Button>
                   
                   <div className="relative">
-                    <Button onClick={() => setIsDownloadMenuOpen(!isDownloadMenuOpen)} variant="icon" disabled={historyIndex < 0 || isLoading} aria-label="Download">
+                    <Button onClick={() => setIsDownloadMenuOpen(!isDownloadMenuOpen)} variant="icon" disabled={!editedImage || isLoading} aria-label="Download">
                       <DownloadIcon className="w-10 h-10" />
                     </Button>
                     {isDownloadMenuOpen && (
@@ -191,7 +249,7 @@ const ThumbnailEditor: React.FC = () => {
                   </div>
 
                   <div className="relative">
-                    <Button onClick={() => setIsExtensionMenuOpen(!isExtensionMenuOpen)} variant="icon" disabled={historyIndex < 0 || isLoading} aria-label="Creative Extension">
+                    <Button onClick={() => setIsExtensionMenuOpen(!isExtensionMenuOpen)} variant="icon" disabled={!editedImage || isLoading} aria-label="Creative Extension">
                       <MagicWandIcon className="w-10 h-10" />
                     </Button>
                     {isExtensionMenuOpen && (
@@ -202,15 +260,22 @@ const ThumbnailEditor: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  
+                  <Button onClick={handleSave} disabled={isLoading} size="lg" className="!py-4 h-full bg-green-500 hover:bg-green-600 focus:ring-green-500">
+                    <SaveIcon className="w-6 h-6" />
+                  </Button>
 
                   <Button onClick={handleGenerate} disabled={isLoading || !prompt} size="lg" className="!py-4 h-full">
+                    {/* FIX: The SparklesIcon component was used but not imported. */}
                     <SparklesIcon className="w-6 h-6" />
                   </Button>
                 </div>
               </div>
               {error && <p className="text-red-500 text-xs text-center mt-2">{error}</p>}
             </div>
-              <button onClick={handleStartOver} className="mt-4 text-sm text-gray-500 hover:text-gray-800 transition-colors">Start Over</button>
+              <button onClick={handleBack} className="mt-4 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+                &larr; Back to Projects
+              </button>
           </div>
         )}
       </div>
