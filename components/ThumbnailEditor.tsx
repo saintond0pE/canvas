@@ -8,15 +8,16 @@ import { SaveIcon } from './icons/SaveIcon';
 import { UndoIcon } from './icons/UndoIcon';
 import { RedoIcon } from './icons/RedoIcon';
 import { VibrantUploadScene } from './icons/VibrantUploadScene';
-import { editImageWithGemini, remixImage, interpretAndApplyEmotion, expandImage } from '../services/geminiService';
+import { editImageWithGemini, remixImage, interpretAndApplyEmotion, expandImage, getPromptSuggestions, getPromptCoaching } from '../services/geminiService';
 import { getProject, saveProject } from '../services/projectService';
 import { EditorBackgroundShapes } from './icons/EditorBackgroundShapes';
 import { MagicWandIcon } from './icons/MagicWandIcon';
 import { RemixIcon } from './icons/RemixIcon';
 import { EmotionIcon } from './icons/EmotionIcon';
 import { ExpandIcon } from './icons/ExpandIcon';
-import PromptCoach from './PromptCoach';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { IdeaIcon } from './icons/IdeaIcon';
+import { EnhanceIcon } from './icons/EnhanceIcon';
 
 interface ThumbnailEditorProps {
   projectId: string | null;
@@ -34,6 +35,13 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
   const [error, setError] = useState<string | null>(null);
   const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
   const [isExtensionMenuOpen, setIsExtensionMenuOpen] = useState(false);
+
+  // State for the new creative assistant bar
+  const [ideaMode, setIdeaMode] = useState<'ask' | 'enhance'>('ask');
+  const [brainstormIdeas, setBrainstormIdeas] = useState<string[]>([]);
+  const [isBrainstorming, setIsBrainstorming] = useState<boolean>(false);
+  const [coachingResult, setCoachingResult] = useState<{ suggestion: string; tip: string } | null>(null);
+  const [isCoaching, setIsCoaching] = useState<boolean>(false);
   
   useEffect(() => {
     if (projectId) {
@@ -167,12 +175,60 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
     setIsDownloadMenuOpen(false);
   };
 
-  const handleApplySuggestion = useCallback((suggestion: string) => {
-    setPrompt(suggestion);
-  }, []);
-  
+  const handleGetBrainstormIdeas = async () => {
+    const imageToAnalyze = history[historyIndex] || originalImage?.base64;
+    if (!imageToAnalyze || !originalImage) return;
+
+    setIsBrainstorming(true);
+    setError(null);
+    setBrainstormIdeas([]);
+    setCoachingResult(null);
+
+    try {
+        const ideas = await getPromptSuggestions(imageToAnalyze, originalImage.type);
+        setBrainstormIdeas(ideas);
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to get ideas.');
+    } finally {
+        setIsBrainstorming(false);
+    }
+  };
+
+  const handleEnhancePrompt = async () => {
+      if (!prompt.trim()) {
+          setError("Write a prompt first, then I can enhance it!");
+          return;
+      }
+      setIsCoaching(true);
+      setError(null);
+      setBrainstormIdeas([]);
+      setCoachingResult(null);
+      try {
+          const result = await getPromptCoaching(prompt);
+          setCoachingResult(result);
+      } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to get coaching.');
+      } finally {
+          setIsCoaching(false);
+      }
+  };
+
+  const handleApplyCoachingSuggestion = () => {
+      if (coachingResult) {
+          setPrompt(coachingResult.suggestion);
+          setCoachingResult(null);
+      }
+  };
+
   return (
     <>
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+      `}</style>
       <div className="relative min-h-[calc(100vh-89px)] overflow-hidden">
         {!originalImage ? (
           <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-89px)] px-4 overflow-hidden">
@@ -266,12 +322,97 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                   </Button>
 
                   <Button onClick={handleGenerate} disabled={isLoading || !prompt} size="lg" className="!py-4 h-full">
-                    {/* FIX: The SparklesIcon component was used but not imported. */}
                     <SparklesIcon className="w-6 h-6" />
                   </Button>
                 </div>
               </div>
               {error && <p className="text-red-500 text-xs text-center mt-2">{error}</p>}
+              
+              <div className="mt-6 p-1 bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="bg-white/80 backdrop-blur-xl rounded-[15px] p-5">
+
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-3 text-gray-800">
+                      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100">
+                        <SparklesIcon className="w-5 h-5 text-pink-500" />
+                      </div>
+                      <h3 className="text-lg font-bold">Creative Assistant</h3>
+                    </div>
+                    <div className="flex items-center gap-1 rounded-full bg-gray-200/70 p-1 border border-white/80">
+                      <button
+                        onClick={() => { setIdeaMode('ask'); setBrainstormIdeas([]); setCoachingResult(null); }}
+                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'ask' ? 'bg-white shadow text-purple-700' : 'text-gray-600 hover:bg-white/50'}`}
+                      >
+                        <IdeaIcon className="w-5 h-5" />
+                        Ask for Ideas
+                      </button>
+                      <button
+                        onClick={() => { setIdeaMode('enhance'); setBrainstormIdeas([]); setCoachingResult(null); }}
+                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'enhance' ? 'bg-white shadow text-pink-700' : 'text-gray-600 hover:bg-white/50'}`}
+                      >
+                        <EnhanceIcon className="w-5 h-5" />
+                        Enhance Prompt
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="min-h-[120px] bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 border border-white shadow-inner">
+                    {ideaMode === 'ask' && (
+                      <>
+                        {brainstormIdeas.length === 0 && !isBrainstorming && (
+                          <div className="text-center animate-fade-in">
+                              <p className="text-gray-600 mb-4">Get creative suggestions based on your image.</p>
+                              <Button onClick={handleGetBrainstormIdeas} disabled={isLoading || isBrainstorming} className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 focus:ring-purple-500 text-white shadow-lg hover:shadow-purple-500/50">
+                                {isBrainstorming ? <><Spinner size="sm" /> Brainstorming...</> : 'Brainstorm Ideas'}
+                              </Button>
+                          </div>
+                        )}
+                        {isBrainstorming && <Spinner />}
+                        {brainstormIdeas.length > 0 && (
+                          <div className="flex flex-wrap justify-center gap-2 animate-fade-in">
+                            {brainstormIdeas.map((idea, i) => (
+                              <button key={i} onClick={() => setPrompt(idea)} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors shadow-sm hover:shadow-md">
+                                "{idea}"
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {ideaMode === 'enhance' && (
+                      <>
+                        {!coachingResult && !isCoaching && (
+                          <div className="text-center animate-fade-in">
+                              <p className="text-gray-600 mb-4">Write a prompt above and I'll help you improve it.</p>
+                              <Button onClick={handleEnhancePrompt} disabled={isLoading || isCoaching || !prompt.trim()} className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 focus:ring-pink-500 text-white shadow-lg hover:shadow-pink-500/50">
+                                {isCoaching ? <><Spinner size="sm" /> Enhancing...</> : 'Enhance My Prompt'}
+                              </Button>
+                          </div>
+                        )}
+                        {isCoaching && <Spinner />}
+                        {coachingResult && (
+                          <div className="p-4 bg-white/80 rounded-lg border border-pink-200 w-full text-left animate-fade-in shadow-md">
+                            <p className="font-semibold text-pink-800">Suggestion:</p>
+                            <p className="text-pink-700 mt-1">"{coachingResult.suggestion}"</p>
+                            <p className="text-sm text-gray-600 italic mt-3">
+                              <span className="font-semibold not-italic">🎨 Tip:</span> {coachingResult.tip}
+                            </p>
+                            <div className="flex items-center gap-2 mt-4">
+                              <Button onClick={handleApplyCoachingSuggestion} size="sm" className="bg-pink-500 hover:bg-pink-600 focus:ring-pink-500">
+                                Use Suggestion
+                              </Button>
+                              <Button onClick={handleEnhancePrompt} size="sm" variant="secondary">
+                                Try Again
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
               <button onClick={handleBack} className="mt-4 text-sm text-gray-500 hover:text-gray-800 transition-colors">
                 &larr; Back to Projects
@@ -279,7 +420,6 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
           </div>
         )}
       </div>
-      {originalImage && <PromptCoach onApplySuggestion={handleApplySuggestion} />}
     </>
   );
 };
