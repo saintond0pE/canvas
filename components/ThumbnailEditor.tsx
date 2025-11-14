@@ -234,14 +234,14 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
           <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-89px)] px-4 overflow-hidden">
             <VibrantUploadScene className="absolute top-0 left-0 w-full h-full object-cover" />
             <div className="relative z-10 text-center flex flex-col items-center">
-              <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800" style={{ textShadow: '2px 2px 8px rgba(255,255,255,0.3)' }}>
+              <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800 dark:text-white" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.1)' }}>
                 Create a new project
               </h1>
-               <p className="mt-4 text-lg text-gray-600 max-w-xl">Upload an image to start your next masterpiece.</p>
+               <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-xl">Upload an image to start your next masterpiece.</p>
               <div className="mt-8 w-full max-w-2xl">
                 <FileUpload onFileUpload={handleImageUpload} />
               </div>
-              <button onClick={handleBack} className="mt-8 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <button onClick={handleBack} className="mt-8 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                 &larr; Back to Projects
               </button>
             </div>
@@ -250,24 +250,24 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
           <div className="relative min-h-[calc(100vh-89px)] flex flex-col items-center justify-center p-4 md:p-8">
             <EditorBackgroundShapes />
             
-            <div className="relative w-full max-w-4xl aspect-video bg-white/20 rounded-3xl shadow-2xl overflow-hidden border-4 border-white/80 flex items-center justify-center">
+            <div className="relative w-full max-w-4xl aspect-video bg-white/20 dark:bg-black/20 rounded-3xl shadow-2xl overflow-hidden border-4 border-white/80 dark:border-white/10 flex items-center justify-center">
                 {isLoading && (
-                  <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center rounded-3xl z-30">
+                  <div className="absolute inset-0 bg-white/70 dark:bg-black/70 flex flex-col items-center justify-center rounded-3xl z-30">
                     <Spinner size="lg" />
-                    <p className="text-gray-600 mt-4">AI is creating magic...</p>
+                    <p className="text-gray-600 dark:text-gray-300 mt-4">AI is creating magic...</p>
                   </div>
                 )}
                 <img src={editedImage} alt="Edited result" className="object-cover w-full h-full" />
             </div>
             
-            <div className="relative mt-8 w-full max-w-4xl bg-white/50 backdrop-blur-2xl p-4 rounded-2xl shadow-lg border border-white/50">
+            <div className="relative mt-8 w-full max-w-4xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-2xl p-4 rounded-2xl shadow-lg border border-white/50 dark:border-white/10">
               <div className="w-full mb-4">
                 <input
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="Untitled Project"
-                  className="w-full text-xl font-bold bg-transparent border-0 border-b-2 border-gray-300/50 focus:ring-0 focus:border-pink-500 transition-colors p-2"
+                  className="w-full text-xl font-bold bg-transparent border-0 border-b-2 border-gray-300/50 dark:border-gray-500/50 focus:ring-0 focus:border-pink-500 dark:focus:border-pink-400 transition-colors p-2 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
 
@@ -276,7 +276,7 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                   <textarea
                     id="prompt"
                     rows={2}
-                    className="w-full p-3 text-lg bg-white/80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+                    className="w-full p-3 text-lg bg-white/80 dark:bg-slate-700/80 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400 transition-colors dark:text-white dark:placeholder-gray-400"
                     placeholder="Describe your vision or an emotion..."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
@@ -296,10 +296,10 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                       <DownloadIcon className="w-10 h-10" />
                     </Button>
                     {isDownloadMenuOpen && (
-                      <div className="absolute bottom-full mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-20 right-0">
-                          <button onClick={() => handleDownload(720)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">HD (720p)</button>
-                          <button onClick={() => handleDownload(1080)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Full HD (1080p)</button>
-                          <button onClick={() => handleDownload(2160)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">4K (2160p)</button>
+                      <div className="absolute bottom-full mb-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 overflow-hidden z-20 right-0">
+                          <button onClick={() => handleDownload(720)} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700">HD (720p)</button>
+                          <button onClick={() => handleDownload(1080)} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700">Full HD (1080p)</button>
+                          <button onClick={() => handleDownload(2160)} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700">4K (2160p)</button>
                       </div>
                     )}
                   </div>
@@ -309,7 +309,7 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                       <MagicWandIcon className="w-10 h-10" />
                     </Button>
                     {isExtensionMenuOpen && (
-                      <div className="absolute bottom-full right-0 mb-3 w-max bg-white/60 backdrop-blur-2xl p-2 rounded-2xl shadow-lg border border-white/50 flex items-center gap-2 z-20">
+                      <div className="absolute bottom-full right-0 mb-3 w-max bg-white/60 dark:bg-slate-800/60 backdrop-blur-2xl p-2 rounded-2xl shadow-lg border border-white/50 dark:border-white/20 flex items-center gap-2 z-20">
                         <Button onClick={handleRemix} variant="icon" disabled={isLoading}><RemixIcon className="w-10 h-10" /></Button>
                         <Button onClick={handleInterpretEmotion} variant="icon" disabled={isLoading}><EmotionIcon className="w-10 h-10" /></Button>
                         <Button onClick={handleExpand} variant="icon" disabled={isLoading}><ExpandIcon className="w-10 h-10" /></Button>
@@ -329,26 +329,26 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
               {error && <p className="text-red-500 text-xs text-center mt-2">{error}</p>}
               
               <div className="mt-6 p-1 bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <div className="bg-white/80 backdrop-blur-xl rounded-[15px] p-5">
+                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[15px] p-5">
 
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3 text-gray-800">
+                    <div className="flex items-center gap-3 text-gray-800 dark:text-white">
                       <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100">
                         <SparklesIcon className="w-5 h-5 text-pink-500" />
                       </div>
                       <h3 className="text-lg font-bold">Creative Assistant</h3>
                     </div>
-                    <div className="flex items-center gap-1 rounded-full bg-gray-200/70 p-1 border border-white/80">
+                    <div className="flex items-center gap-1 rounded-full bg-gray-200/70 dark:bg-slate-700/70 p-1 border border-white/80 dark:border-white/10">
                       <button
                         onClick={() => { setIdeaMode('ask'); setBrainstormIdeas([]); setCoachingResult(null); }}
-                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'ask' ? 'bg-white shadow text-purple-700' : 'text-gray-600 hover:bg-white/50'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'ask' ? 'bg-white dark:bg-slate-600 shadow text-purple-700 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50'}`}
                       >
                         <IdeaIcon className="w-5 h-5" />
                         Ask for Ideas
                       </button>
                       <button
                         onClick={() => { setIdeaMode('enhance'); setBrainstormIdeas([]); setCoachingResult(null); }}
-                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'enhance' ? 'bg-white shadow text-pink-700' : 'text-gray-600 hover:bg-white/50'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-300 ${ideaMode === 'enhance' ? 'bg-white dark:bg-slate-600 shadow text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50'}`}
                       >
                         <EnhanceIcon className="w-5 h-5" />
                         Enhance Prompt
@@ -356,12 +356,12 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                     </div>
                   </div>
 
-                  <div className="min-h-[120px] bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 border border-white shadow-inner">
+                  <div className="min-h-[120px] bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-4 flex flex-col items-center justify-center transition-all duration-300 border border-white dark:border-white/10 shadow-inner">
                     {ideaMode === 'ask' && (
                       <>
                         {brainstormIdeas.length === 0 && !isBrainstorming && (
                           <div className="text-center animate-fade-in">
-                              <p className="text-gray-600 mb-4">Get creative suggestions based on your image.</p>
+                              <p className="text-gray-600 dark:text-gray-300 mb-4">Get creative suggestions based on your image.</p>
                               <Button onClick={handleGetBrainstormIdeas} disabled={isLoading || isBrainstorming} className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 focus:ring-purple-500 text-white shadow-lg hover:shadow-purple-500/50">
                                 {isBrainstorming ? <><Spinner size="sm" /> Brainstorming...</> : 'Brainstorm Ideas'}
                               </Button>
@@ -371,7 +371,7 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                         {brainstormIdeas.length > 0 && (
                           <div className="flex flex-wrap justify-center gap-2 animate-fade-in">
                             {brainstormIdeas.map((idea, i) => (
-                              <button key={i} onClick={() => setPrompt(idea)} className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors shadow-sm hover:shadow-md">
+                              <button key={i} onClick={() => setPrompt(idea)} className="px-3 py-1.5 bg-purple-100 dark:bg-purple-800/50 text-purple-800 dark:text-purple-200 rounded-full text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-800/80 transition-colors shadow-sm hover:shadow-md">
                                 "{idea}"
                               </button>
                             ))}
@@ -384,7 +384,7 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                       <>
                         {!coachingResult && !isCoaching && (
                           <div className="text-center animate-fade-in">
-                              <p className="text-gray-600 mb-4">Write a prompt above and I'll help you improve it.</p>
+                              <p className="text-gray-600 dark:text-gray-300 mb-4">Write a prompt above and I'll help you improve it.</p>
                               <Button onClick={handleEnhancePrompt} disabled={isLoading || isCoaching || !prompt.trim()} className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 focus:ring-pink-500 text-white shadow-lg hover:shadow-pink-500/50">
                                 {isCoaching ? <><Spinner size="sm" /> Enhancing...</> : 'Enhance My Prompt'}
                               </Button>
@@ -392,10 +392,10 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                         )}
                         {isCoaching && <Spinner />}
                         {coachingResult && (
-                          <div className="p-4 bg-white/80 rounded-lg border border-pink-200 w-full text-left animate-fade-in shadow-md">
-                            <p className="font-semibold text-pink-800">Suggestion:</p>
-                            <p className="text-pink-700 mt-1">"{coachingResult.suggestion}"</p>
-                            <p className="text-sm text-gray-600 italic mt-3">
+                          <div className="p-4 bg-white/80 dark:bg-slate-700/50 rounded-lg border border-pink-200 dark:border-pink-800/50 w-full text-left animate-fade-in shadow-md">
+                            <p className="font-semibold text-pink-800 dark:text-pink-300">Suggestion:</p>
+                            <p className="text-pink-700 dark:text-pink-300/90 mt-1">"{coachingResult.suggestion}"</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 italic mt-3">
                               <span className="font-semibold not-italic">🎨 Tip:</span> {coachingResult.tip}
                             </p>
                             <div className="flex items-center gap-2 mt-4">
@@ -414,7 +414,7 @@ const ThumbnailEditor: React.FC<ThumbnailEditorProps> = ({ projectId, onNavigate
                 </div>
               </div>
             </div>
-              <button onClick={handleBack} className="mt-4 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+              <button onClick={handleBack} className="mt-4 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors">
                 &larr; Back to Projects
               </button>
           </div>

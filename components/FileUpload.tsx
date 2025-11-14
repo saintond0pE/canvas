@@ -55,8 +55,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
 
   return (
     <div
-      className={`group relative p-8 transition-all duration-300 bg-white/40 backdrop-blur-xl rounded-3xl border shadow-2xl hover:shadow-purple-300/40
-        ${isDragging ? 'border-purple-300 scale-105 shadow-purple-500/20' : 'border-white/30'}`}
+      className={`group relative p-8 transition-all duration-300 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-3xl border shadow-2xl hover:shadow-purple-300/40
+        ${isDragging ? 'border-purple-300 scale-105 shadow-purple-500/20' : 'border-white/30 dark:border-white/10'}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -70,10 +70,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         onChange={(e) => handleFileChange(e.target.files)}
       />
       <label htmlFor="file-upload" className="flex flex-col items-center justify-center text-center cursor-pointer">
-        <UploadIcon className="w-16 h-16 mb-4 text-gray-700 transition-transform duration-300 group-hover:-translate-y-2" />
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Upload Your Image</h3>
-        <p className="text-gray-600">Drag & drop or click to select a file</p>
-        <p className="text-xs text-gray-500 mt-2">Recommended aspect ratio: 16:9 (1280x720px)</p>
+        <UploadIcon className="w-16 h-16 mb-4 text-gray-700 dark:text-gray-300 transition-transform duration-300 group-hover:-translate-y-2" />
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Upload Your Image</h3>
+        <p className="text-gray-600 dark:text-gray-300">Drag & drop or click to select a file</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Recommended aspect ratio: 16:9 (1280x720px)</p>
       </label>
     </div>
   );

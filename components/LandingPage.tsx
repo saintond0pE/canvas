@@ -41,12 +41,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
         <div className="container mx-auto relative z-10">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-5xl md:text-8xl font-extrabold text-gray-900 leading-tight tracking-tighter">
+            <h1 className="text-5xl md:text-8xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tighter">
               Your canvas,
               <br />
               reimagined.
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-xl mx-auto">
+            <p className="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
               Canvas AI provides an effective and powerful way to manage and enhance your creative projects. Describe your vision and let our AI bring it to life in seconds.
             </p>
             <div className="mt-10">
@@ -62,11 +62,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       <div id="features" className="py-24 sm:py-32 relative z-10">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto lg:text-center">
-             <h2 className="text-base font-semibold leading-7 text-pink-500">How it Works</h2>
-             <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+             <h2 className="text-base font-semibold leading-7 text-pink-500 dark:text-pink-400">How it Works</h2>
+             <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
               Everything you need to create
             </p>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
+            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
               Canvas AI is more than an editor; it's your creative partner. We've packed it with powerful features to make your workflow seamless and inspiring.
             </p>
           </div>
@@ -82,11 +82,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     transitionDelay: `${index * 100}ms`
                   }}
                 >
-                  <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
+                  <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900 dark:text-white">
                     <FeatureCardIcons type={feature.icon as 'ai' | 'inspiration' | 'history'} />
                     {feature.title}
                   </dt>
-                  <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                  <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600 dark:text-gray-300">
                     <p className="flex-auto">{feature.description}</p>
                   </dd>
                 </div>
