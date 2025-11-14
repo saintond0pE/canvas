@@ -94,7 +94,7 @@ const App: React.FC = () => {
     <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300 flex flex-col">
       {isDesktop && <CursorTrail />}
       <Header 
-        onLogoClick={currentPage === 'landing' ? navigateToHome : navigateToLibrary}
+        onLogoClick={navigateToHome}
         onFeedbackClick={() => setIsFeedbackModalOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
