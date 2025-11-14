@@ -3,9 +3,13 @@ import Button from './Button';
 import { LandingBackgroundShapes } from './icons/LandingBackgroundShapes';
 import { useScrollPosition } from '../hooks/useScrollPosition';
 import { FeatureCardIcons } from './icons/FeatureCardIcons';
+import { useTapBloom } from '../hooks/useTapBloom';
+import { TapBloomEffect } from './TapBloomEffect';
+
 
 interface LandingPageProps {
   onGetStarted: () => void;
+  isDesktop: boolean;
 }
 
 const features = [
@@ -27,15 +31,24 @@ const features = [
 ];
 
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, isDesktop }) => {
   const scrollY = useScrollPosition();
+  const [blooms, addBloom] = useTapBloom();
 
   // A simple function to determine visibility based on scroll position
   // This can be replaced with a more robust Intersection Observer for production
   const isFeaturesVisible = scrollY > 100;
 
+  const handleTap = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDesktop) {
+      const touch = e.touches[0];
+      addBloom(touch.clientX, touch.clientY);
+    }
+  };
+
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden" onTouchStart={handleTap}>
+      {!isDesktop && <TapBloomEffect blooms={blooms} />}
       <LandingBackgroundShapes scrollY={scrollY} />
       {/* Hero Section */}
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">

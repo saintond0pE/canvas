@@ -78,7 +78,7 @@ const App: React.FC = () => {
       case 'landing':
         return (
           <div className="bg-[#FDFBF5] dark:bg-gray-900">
-            <LandingPage onGetStarted={navigateToLibrary} />
+            <LandingPage onGetStarted={navigateToLibrary} isDesktop={isDesktop} />
           </div>
         );
       case 'library':
@@ -86,12 +86,12 @@ const App: React.FC = () => {
       case 'editor':
         return <ThumbnailEditor projectId={activeProjectId} onNavigateBack={navigateToLibrary} />;
       default:
-        return <LandingPage onGetStarted={navigateToLibrary} />;
+        return <LandingPage onGetStarted={navigateToLibrary} isDesktop={isDesktop} />;
     }
   };
 
   return (
-    <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300 flex flex-col">
       {isDesktop && <CursorTrail />}
       <Header 
         onLogoClick={currentPage === 'landing' ? navigateToHome : navigateToLibrary}
@@ -99,9 +99,12 @@ const App: React.FC = () => {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
-      <main>
+      <main className="flex-grow">
         {renderPage()}
       </main>
+      <footer className="py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+        Designed by Chira
+      </footer>
       <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
     </div>
   );
