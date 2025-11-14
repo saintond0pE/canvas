@@ -8,29 +8,34 @@ const colors = {
   sage: '#84A98C',
 };
 
+// All shapes are designed to be centered within a 30x30 viewbox
 const shapeConfig: Record<BloomShapeType, { color: string; svg: React.ReactNode }> = {
   asterisk: {
     color: colors.orange,
     svg: (
-      <path d="M15 0.5L17.5 7.5L24.5 10.25L17.5 13L15 20L12.5 13L5.5 10.25L12.5 7.5L15 0.5Z" />
+      // A more balanced, centered 8-point star
+      <path d="M15 5 L17.5 12 L24.5 14.75 L17.5 17.5 L15 24.5 L12.5 17.5 L5.5 14.75 L12.5 12 L15 5Z" />
     ),
   },
   semicircle: {
     color: colors.pink,
     svg: (
-      <path d="M30 15C30 6.71573 23.2843 0 15 0V15H30Z" />
+      // A proper top semi-circle, centered horizontally
+      <path d="M5 15 C 5 9.477, 9.477 5, 15 5 C 20.523 5, 25 9.477, 25 15 Z" />
     ),
   },
   wavyline: {
     color: colors.sage,
     svg: (
-      <path d="M2 18C8.66667 14.6667 19.6 14.8 26 18" strokeWidth="4" strokeLinecap="round" />
+      // The wavy line, now centered vertically
+      <path d="M4 15 C 10.667 11.667, 21.6 11.8, 28 15" strokeWidth="4" strokeLinecap="round" fill="none" />
     ),
   },
   arc: {
     color: colors.lavender,
     svg: (
-      <path d="M26 18C20.701 18 15.5 13.464 15.5 8C15.5 2.536 20.701 -2 26 -2" strokeWidth="4" strokeLinecap="round" fill="none" />
+       // A smooth, clean arc that stays within bounds
+      <path d="M25 5 C 15 5, 5 15, 5 25" strokeWidth="4" strokeLinecap="round" fill="none" />
     ),
   },
 };
