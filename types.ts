@@ -1,3 +1,4 @@
+
 export interface ImageFile {
   name: string;
   type: string;
@@ -12,4 +13,11 @@ export interface Project {
   history: string[];
   createdAt: number; // Storing as a timestamp for easy serialization
   updatedAt: number;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
 }

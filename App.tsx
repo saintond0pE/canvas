@@ -1,13 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
+
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import LandingPage from './components/LandingPage';
 import ThumbnailEditor from './components/ThumbnailEditor';
 import Header from './components/Header';
 import { CursorTrail } from './components/CursorTrail';
 import ProjectLibrary from './components/ProjectLibrary';
 import FeedbackModal from './components/FeedbackModal';
+import LoginPage from './components/LoginPage';
+import { User } from './types';
+import { logout } from './services/authService';
 
-type Page = 'landing' | 'library' | 'editor';
+type Page = 'landing' | 'library' | 'editor' | 'login';
 type Theme = 'light' | 'dark';
+export type LoginMode = 'signin' | 'signup';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
@@ -15,6 +20,11 @@ const App: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>('light');
+  const [user, setUser] = useState<User | null>(null);
+  const [initialLoginMode, setInitialLoginMode] = useState<LoginMode>('signup');
+
+  // Ref for the header profile icon to target animations
+  const headerProfileRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as Theme;
@@ -50,6 +60,7 @@ const App: React.FC = () => {
       landing: 'bg-[#FDFBF5] dark:bg-gray-900',
       library: 'bg-gray-50 dark:bg-slate-950',
       editor: 'bg-white dark:bg-gray-900',
+      login: 'bg-[#FDFBF5] dark:bg-gray-900',
     };
     document.body.className = pageBackgrounds[currentPage] || 'bg-white dark:bg-gray-900';
     
@@ -58,11 +69,21 @@ const App: React.FC = () => {
     };
   }, [currentPage, theme]);
 
+  const handleGetStarted = useCallback(() => {
+    if (!user) {
+        setInitialLoginMode('signup');
+        setCurrentPage('login');
+        return;
+    }
+    setCurrentPage('library');
+    setActiveProjectId(null);
+  }, [user]);
+  
   const navigateToLibrary = useCallback(() => {
     setCurrentPage('library');
     setActiveProjectId(null);
   }, []);
-  
+
   const navigateToEditor = useCallback((projectId: string | null) => {
     setActiveProjectId(projectId);
     setCurrentPage('editor');
@@ -72,21 +93,39 @@ const App: React.FC = () => {
     setCurrentPage('landing');
     setActiveProjectId(null);
   }, []);
+
+  const navigateToLogin = useCallback(() => {
+    if (user) {
+        // If user is logged in, clicking login button could go to library or handle logout
+        setCurrentPage('library');
+    } else {
+        setInitialLoginMode('signin');
+        setCurrentPage('login');
+    }
+  }, [user]);
+
+  const handleLoginSuccess = (loggedInUser: User) => {
+      setUser(loggedInUser);
+      setCurrentPage('library');
+  };
   
   const renderPage = () => {
     switch (currentPage) {
       case 'landing':
         return (
           <div className="bg-[#FDFBF5] dark:bg-gray-900">
-            <LandingPage onGetStarted={navigateToLibrary} isDesktop={isDesktop} />
+            <LandingPage onGetStarted={handleGetStarted} onLogin={navigateToLogin} isDesktop={isDesktop} />
           </div>
         );
       case 'library':
         return <ProjectLibrary onSelectProject={navigateToEditor} onNewProject={() => navigateToEditor(null)} />;
       case 'editor':
         return <ThumbnailEditor projectId={activeProjectId} onNavigateBack={navigateToLibrary} />;
+      case 'login':
+        // Pass the ref so the login page knows where to send the sparks
+        return <LoginPage onLoginSuccess={handleLoginSuccess} initialMode={initialLoginMode} headerIconRef={headerProfileRef} />;
       default:
-        return <LandingPage onGetStarted={navigateToLibrary} isDesktop={isDesktop} />;
+        return <LandingPage onGetStarted={handleGetStarted} onLogin={navigateToLogin} isDesktop={isDesktop} />;
     }
   };
 
@@ -96,8 +135,11 @@ const App: React.FC = () => {
       <Header 
         onLogoClick={navigateToHome}
         onFeedbackClick={() => setIsFeedbackModalOpen(true)}
+        onLoginClick={navigateToLogin}
         theme={theme}
         onToggleTheme={toggleTheme}
+        user={user}
+        profileRef={headerProfileRef}
       />
       <main className="flex-grow">
         {renderPage()}
